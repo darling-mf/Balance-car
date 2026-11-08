@@ -28,3 +28,9 @@ template.uvguix.gaoxi
 # 系统文件
 Thumbs.db
 Desktop.ini
+# ---- 之后补充 ----
+# Keil 用户界面/调试状态（每台电脑不同，由 Keil 自动生成）
+*.uvoptx
+
+# OLED 字模的源字体（约 45 MB，生成出的 oled_font.h 已在仓库中）
+my_lib/font/ttfttc/

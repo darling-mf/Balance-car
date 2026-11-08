@@ -122,7 +122,7 @@ balance_car/
 │  ├─ pid.c               PID 控制器（梯形积分 + 抗饱和）
 │  ├─ qmath.c             自实现三角函数（替代 libm）
 │  ├─ i2c.c / si2c.c      硬件 / 软件 I2C
-│  ├─ oled.c / oled_font.h
+│  ├─ oled.c / oled_font.h   （字模由 ttf2c 生成，源字体不入库）
 │  ├─ spi.c / usart.c / delay.c / button.c / task.h
 ├─ test/                  分模块自测程序
 │  ├─ mpu6050_test.c      陀螺仪/加速度计/欧拉角验证
@@ -141,7 +141,8 @@ balance_car/
 
 1. **环境**：Keil MDK 5 + STM32F1xx 器件支持包；仿真器 ST-Link（SWD）
 2. 打开 `balance_car.uvprojx` → Build（F7）→ Download（F8）
-3. **单独验证某个硬件模块**：在 `main.c` 里取消对应测试的注释，注释掉 `App_*_Init()`：
+3. **清理编译产物**：双击 `tools/clean.bat`（等价 Keil 的 Project → Clean + 清掉 IDE 状态文件）
+4. **单独验证某个硬件模块**：在 `main.c` 里取消对应测试的注释，注释掉 `App_*_Init()`：
    ```c
    //QMath_Test();          // 三角函数精度
    //MPU6050_EularAngleTest();  // 姿态角输出
@@ -190,3 +191,8 @@ ROM 占用 28,580 B / 65,536 B (43.6%)
 - 公开平衡车教学项目的框架组织方式：分模块分层、`PERIODIC` 时间片调度宏、`qmath` 定点数学库
 - MPU6050 / MPU6500 数据手册：寄存器配置与量程换算
 - STM32F10x 标准外设库
+> **仓库说明**
+> - `my_lib/font/ttfttc/` 下的中文字体（约 45 MB）**不入库**——它们只用来生成 OLED 字模，
+>   生成结果 `oled_font.h` 已经在仓库里。需要重新生成字模时，把 TTF 放回该目录，用 `my_lib/font/ttf2c.exe` 转换。
+> - `*.uvoptx` 是 Keil 的**用户界面/调试状态**文件（窗口布局、断点），每台电脑不同，不入库；
+>   工程文件是 `balance_car.uvprojx`，这个必须保留。
