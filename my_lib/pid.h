@@ -14,8 +14,11 @@ typedef struct
 	float err_k_1;  //err[k-1]，上一次运行PID时的误差
 	float err_int_k_1; //err_int[k-1],上一次运行的积分值
 	
-	float UpperLimit; //上限
-	float LowerLimit; //下限
+	float UpperLimit; //输出上限
+	float LowerLimit; //输出下限
+	
+	float IntUpperLimit; //积分项上限（与输出限幅量纲不同，单独配置）
+	float IntLowerLimit; //积分项下限
 }PID_TypeDef;
 
 
@@ -24,5 +27,6 @@ void PID_ChangeSP(PID_TypeDef *PID,float SP);
 float PID_Compute(PID_TypeDef *PID,float FB);
 
 void PID_LimitConfig(PID_TypeDef *PID,float Upper,float Lower);
+void PID_IntLimitConfig(PID_TypeDef *PID,float Upper,float Lower);
 void PID_Reset(PID_TypeDef *PID);
 #endif

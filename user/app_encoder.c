@@ -248,7 +248,7 @@ void EXTI3_IRQHandler(void)
 	else //现在轮胎反转
 	{
 		encoder_r --;
-		if(direction_l >0) //之前轮胎是正转的
+		if(direction_r >0) //之前轮胎是正转的
 		{
 			direction_r = -2;
 		}

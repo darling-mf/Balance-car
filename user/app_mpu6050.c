@@ -11,6 +11,7 @@ static float yaw,pitch,roll; //欧拉角，单位°
 // reg地址，value值
 static void reg_write(uint8_t reg,uint8_t value);
 static uint8_t reg_read(uint8_t reg);
+static void reg_read_burst(uint8_t reg,uint8_t *buf,uint8_t len);
 //
 // @简介：对MPU6050初始化
 //
@@ -79,22 +80,27 @@ void App_MPU6050_Proc(void)
 //
 void App_MPU6050_Update(void)
 {
-	int16_t ax_raw = (int16_t)((reg_read(0x3b)<< 8) + reg_read(0x3c)); //ax的原始数据
-	int16_t ay_raw = (int16_t)((reg_read(0x3d)<< 8) + reg_read(0x3e)); //ay的原始数据
-	int16_t az_raw = (int16_t)((reg_read(0x3f)<< 8) + reg_read(0x40)); //az的原始数据
+	// #1. 一次性从 0x3B 连续读 14 字节：AX/AY/AZ/TEMP/GX/GY/GZ
+	//     相比逐寄存器读（14 次 I2C 事务），burst read 只需 1 次，减少总线占用与采样抖动
+	uint8_t buf[14];
+	reg_read_burst(0x3b,buf,14);
+	
+	int16_t ax_raw = (int16_t)((buf[0]<< 8) | buf[1]); //ax的原始数据
+	int16_t ay_raw = (int16_t)((buf[2]<< 8) | buf[3]); //ay的原始数据
+	int16_t az_raw = (int16_t)((buf[4]<< 8) | buf[5]); //az的原始数据
 	
 	ax = ax_raw/32768.0f *2.0f;
 	ay = ay_raw/32768.0f *2.0f;
 	az = az_raw/32768.0f *2.0f;
 	
-	int16_t temperature_raw = (int16_t)((reg_read(0x41)<< 8) + reg_read(0x42)); //温度计的原始数据
+	int16_t temperature_raw = (int16_t)((buf[6]<< 8) | buf[7]); //温度计的原始数据
 	
 	//temperature = temperature_raw / 340.0f +36.53f; //MPU6050的计算公式
 	temperature = (temperature_raw - 0) / 333.87f + 21.0f; // MPU6500
 	
-	int16_t gx_raw = (int16_t)((reg_read(0x43)<< 8) + reg_read(0x44)); //gx的原始数据
-	int16_t gy_raw = (int16_t)((reg_read(0x45)<< 8) + reg_read(0x46)); //gy的原始数据
-	int16_t gz_raw = (int16_t)((reg_read(0x47)<< 8) + reg_read(0x48)); //gz的原始数据
+	int16_t gx_raw = (int16_t)((buf[8]<< 8)  | buf[9]);  //gx的原始数据
+	int16_t gy_raw = (int16_t)((buf[10]<< 8) | buf[11]); //gy的原始数据
+	int16_t gz_raw = (int16_t)((buf[12]<< 8) | buf[13]); //gz的原始数据
 	
 	gx = gx_raw/32768.0f *2000.0f;
 	gy = gy_raw/32768.0f *2000.0f;
@@ -170,4 +176,16 @@ static uint8_t reg_read(uint8_t reg)
 	My_I2C_ReceiveBytes(I2C1,0xd0,&regValue,1); //读取一个字节
 	
 	return regValue;
+}
+//
+// @简介：从指定寄存器开始连续读取 len 字节（burst read）
+// @参数 reg - 起始寄存器地址
+// @参数 buf - 输出缓冲区
+// @参数 len - 读取字节数
+// @note  I2C 驱动内部对前 len-1 字节回 ACK、最后一字节回 NACK 并 STOP
+//
+static void reg_read_burst(uint8_t reg,uint8_t *buf,uint8_t len)
+{
+	My_I2C_SendBytes(I2C1,0xd0,&reg,1);        //发送起始寄存器地址
+	My_I2C_ReceiveBytes(I2C1,0xd0,buf,len);    //连续读取 len 字节
 }

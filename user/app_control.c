@@ -8,7 +8,7 @@
 
 //如果量不变，则声明为const
 //RAM的空间十分宝贵，常量尽量放在FLASH中
-static const float Pi =  3.1435927f;
+static const float Pi =  3.1415927f;
 static const float g = 9.8;
 static const float Lp = 0.062;
 static const float Rw = 0.032;

@@ -33,7 +33,7 @@ void App_Motor_Proc(void)
 	
 	// #2. 计算PID控制器的输出 (传递反馈值FB)
 	float ua_l = PID_Compute(&pid_motor_l,omega_l);
-	float ua_r = PID_Compute(&pid_motor_l,omega_l);
+	float ua_r = PID_Compute(&pid_motor_r,omega_r);
 	
 	// #3. 将电压ua设置到电机两端
 		//获取电池电压vbat
